@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1016636980445",
+    "project_id": "adeebtest-d415d",
+    "storage_bucket": "adeebtest-d415d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016636980445:android:6907f0405645e4287cef34",
+        "android_client_info": {
+          "package_name": "com.DreamCatcher.AdeebTask"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCY1ohTtfeLYHWYMuV6fWkb4zeo_ZzxPjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
