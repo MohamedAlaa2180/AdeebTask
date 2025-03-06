@@ -9,7 +9,7 @@ public class LoginScreenView : MonoBehaviour
     [Header("UI Elements")]
     public TMP_InputField inputEmail;
     public TMP_InputField inputPassword;
-    public TextMeshProUGUI textMessage;
+    public TextMeshProUGUI errorMessage;
     public Button buttonLogin;
 
     private void OnEnable()
@@ -42,7 +42,7 @@ public class LoginScreenView : MonoBehaviour
     {
         try
         {
-            FirebaseUser user = await FirebaseManager.LoginUser(email, password);
+            await FirebaseManager.LoginUser(email, password);
         }
         catch (System.Exception e)
         {
@@ -53,9 +53,9 @@ public class LoginScreenView : MonoBehaviour
 
     private void DisplayErrorMessage(string message)
     {
-        if (textMessage != null)
+        if (errorMessage != null)
         {
-            textMessage.text = message;
+            errorMessage.text = message;
         }
         Debug.Log(message);
     }

@@ -31,7 +31,7 @@ public class RegisterScreenView : MonoBehaviour
         string password = inputPassword.text.Trim();
         string name = inputName.text.Trim();
 
-        // Determine user role
+        // Determine user Role
         UserRole role = toggleTeacher.isOn ? UserRole.teacher : UserRole.student; // Default to student if no selection
 
         // Check for empty fields
@@ -49,7 +49,7 @@ public class RegisterScreenView : MonoBehaviour
     {
         try
         {
-            FirebaseUser user = await FirebaseManager.RegisterUser(email, password, role, name);
+            await FirebaseManager.RegisterUser(email, password, role, name);
         }
         catch (System.Exception e)
         {

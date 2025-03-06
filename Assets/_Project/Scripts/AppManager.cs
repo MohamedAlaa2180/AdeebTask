@@ -1,25 +1,30 @@
 using Firebase;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class AppManager : MonoBehaviour
+public class AppManager : GenericSingletonClass<AppManager>
 {
-    private static AppManager _instance;
-
-    public static AppManager Instance
+    private void OnEnable()
     {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = FindFirstObjectByType<AppManager>();
-                if (_instance == null)
-                {
-                    GameObject go = new GameObject("AppManager");
-                    _instance = go.AddComponent<AppManager>();
-                }
-            }
-            return _instance;
-        }
+        FirebaseManager.OnUserLoggedIn += OnUserLoggedIn;
+        FirebaseManager.OnUserLoggedOut += OnUserLoggedOut;
+    }
+
+    private void OnDisable()
+    {
+        FirebaseManager.OnUserLoggedIn -= OnUserLoggedIn;
+        FirebaseManager.OnUserLoggedOut -= OnUserLoggedOut;
+    }
+
+    private void OnUserLoggedIn(UserData userData)
+    {
+        SessionData.SetCurrentUser(userData);
+        SceneManager.LoadScene("HomeScene");
+    }
+
+    private void OnUserLoggedOut(UserData userData)
+    {
+        SceneManager.LoadScene("LoginRegisterScene");
     }
 
     private void Start()

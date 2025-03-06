@@ -6,79 +6,84 @@ using System.Net.Mail;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class FirebaseAuthrization
+namespace Firebase
 {
-    private FirebaseAuth auth;
-    public FirebaseUser CurrentUser { get; set; }
-    public string DisplayName { get; set; }
-    public string EmailAddress { get; set; }
-    public Uri PhotoUrl { get; set; }
-
-    public FirebaseAuthrization()
+    public class FirebaseAuthrization
     {
-        auth = FirebaseAuth.DefaultInstance;
-        auth.StateChanged += AuthStateChanged;
-        AuthStateChanged(this, null);
-    }
+        private FirebaseAuth auth;
+        public FirebaseUser CurrentUser { get; set; }
+        public string DisplayName { get; set; }
+        public string EmailAddress { get; set; }
+        public Uri PhotoUrl { get; set; }
 
-    private void AuthStateChanged(object sender, EventArgs e)
-    {
-        if (auth.CurrentUser != CurrentUser)
+        public FirebaseAuthrization()
         {
-            bool signedIn = CurrentUser != auth.CurrentUser && auth.CurrentUser != null
-                && auth.CurrentUser.IsValid();
-            if (!signedIn && CurrentUser != null)
+            auth = FirebaseAuth.DefaultInstance;
+            auth.StateChanged += AuthStateChanged;
+            AuthStateChanged(this, null);
+        }
+
+        private void AuthStateChanged(object sender, EventArgs e)
+        {
+            if (auth.CurrentUser != CurrentUser)
             {
-                Debug.Log("Signed out " + CurrentUser.UserId);
+                bool signedIn = CurrentUser != auth.CurrentUser && auth.CurrentUser != null
+                    && auth.CurrentUser.IsValid();
+                if (!signedIn && CurrentUser != null)
+                {
+                    Debug.Log("Signed out " + CurrentUser.UserId);
+                }
+                CurrentUser = auth.CurrentUser;
+                if (signedIn)
+                {
+                    Debug.Log("Signed in " + CurrentUser.UserId);
+                    DisplayName = CurrentUser.DisplayName ?? "";
+                    EmailAddress = CurrentUser.Email ?? "";
+                    PhotoUrl = CurrentUser.PhotoUrl ?? null;
+                }
             }
-            CurrentUser = auth.CurrentUser;
-            if (signedIn)
+        }
+
+        public async Task<FirebaseUser> RegisterUser(string email, string password, string nickName)
+        {
+            try
             {
-                Debug.Log("Signed in " + CurrentUser.UserId);
-                DisplayName = CurrentUser.DisplayName ?? "";
-                EmailAddress = CurrentUser.Email ?? "";
-                PhotoUrl = CurrentUser.PhotoUrl ?? null;
+                var result = await auth.CreateUserWithEmailAndPasswordAsync(email, password); ;
+                CurrentUser = result.User;
+
+                UserProfile profile = new UserProfile { DisplayName = nickName };
+                await CurrentUser.UpdateUserProfileAsync(profile);
+
+                Debug.Log($"User registered: {CurrentUser.Email}");
+
+                return CurrentUser; // Returning the FirebaseUser object
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
-    }
 
-    public async Task<FirebaseUser> RegisterUser(string email, string password, string nickName)
-    {
-        try
+
+        public async Task<FirebaseUser> LoginUser(string email, string password)
         {
-            var result = await auth.CreateUserWithEmailAndPasswordAsync(email, password);;
-            CurrentUser = result.User;
-
-            UserProfile profile = new UserProfile { DisplayName = nickName };
-            await CurrentUser.UpdateUserProfileAsync(profile);
-
-            return CurrentUser; // Returning the FirebaseUser object
+            try
+            {
+                var result = await auth.SignInWithEmailAndPasswordAsync(email, password);
+                Debug.Log($"User logged in: {result.User.Email}");
+                CurrentUser = result.User;
+                return CurrentUser; // Returning the FirebaseUser object
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
-        catch (Exception e)
+
+        public void LogoutUser()
         {
-            throw e;
+            auth.SignOut();
+            Debug.Log("User logged out");
         }
-    }
-
-
-    public async Task<FirebaseUser> LoginUser(string email, string password)
-    {
-        try
-        {
-            var result = await auth.SignInWithEmailAndPasswordAsync(email, password);
-            Debug.Log($"User logged in: {result.User.Email}");
-            CurrentUser = result.User; 
-            return CurrentUser; // Returning the FirebaseUser object
-        }
-        catch (Exception e)
-        {
-            throw e;
-        }
-    }
-
-    public void LogoutUser()
-    {
-        auth.SignOut();
-        Debug.Log("User logged out");
     }
 }

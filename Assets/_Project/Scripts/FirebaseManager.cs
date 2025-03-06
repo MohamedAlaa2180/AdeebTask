@@ -1,7 +1,10 @@
 using Firebase.Auth;
 using Firebase.Database;
+using Newtonsoft.Json;
+using NUnit.Framework;
 using System;
-using System.Net.Mail;
+using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -10,7 +13,13 @@ namespace Firebase
     public static class FirebaseManager
     {
         private static FirebaseAuthrization auth;
-        private static DatabaseReference databaseReference;
+        private static FirebaseDB db;
+
+        public static event Action<UserData> OnUserLoggedIn;
+
+        public static event Action<UserData> OnUserLoggedOut;
+
+        public static event Action<GroupData> OnGroupCreated;
 
         public static async void InitializeFirebase()
         {
@@ -20,7 +29,7 @@ namespace Firebase
             {
                 FirebaseApp app = FirebaseApp.DefaultInstance;
                 auth = new FirebaseAuthrization();
-                databaseReference = FirebaseDatabase.DefaultInstance.RootReference;
+                db = new FirebaseDB();
                 Debug.Log("Firebase Initialized");
             }
             else
@@ -29,14 +38,15 @@ namespace Firebase
             }
         }
 
-        public static async Task<FirebaseUser> RegisterUser(string email, string password, UserRole role, string nickName)
+        public static async Task<UserData> RegisterUser(string email, string password, UserRole role, string nickName)
         {
             try
             {
                 var user = await auth.RegisterUser(email, password, nickName);
-                if (user != null) WriteNewUser(new UserData(user.UserId, user.Email, role.ToString()));
-
-                return user;
+                var userData = new UserData(user.UserId, user.Email, user.DisplayName, role);
+                await WriteNewUser(userData);
+                OnUserLoggedIn?.Invoke(userData);
+                return userData;
             }
             catch (Exception e)
             {
@@ -44,89 +54,140 @@ namespace Firebase
             }
         }
 
-        public static async Task<FirebaseUser> LoginUser(string email, string password)
+        public static async Task<UserData> LoginUser(string email, string password)
         {
             try
             {
-                return await auth.LoginUser(email, password);
+                var user = await auth.LoginUser(email, password);
+                var userData = await db.GetUser(user.UserId);
+                OnUserLoggedIn?.Invoke(userData);
+                return userData;
             }
             catch (Exception e)
             {
                 throw e;
             }
-            
         }
-
 
         public static void LogoutUser() => auth.LogoutUser();
 
-        private static void WriteNewUser(UserData userData)
+        private static async Task WriteNewUser(UserData userData)
         {
-            string json = JsonUtility.ToJson(userData);
-
-            databaseReference.Child("users").Child(userData.userId).SetRawJsonValueAsync(json);
+            await db.WriteNewUser(userData);
         }
 
         public static async Task CreateGroup(string groupName, string grade, string subject)
         {
-            string groupId = databaseReference.Child("groups").Push().Key;
-            GroupData newGroup = new GroupData(groupId, groupName, grade, subject, auth.CurrentUser.UserId);
+            try
+            {
+                var newGroup = await db.CreateGroup(groupName, grade, subject, auth.CurrentUser.UserId);
+                var teacher = await db.GetUser(newGroup.TeacherId);
 
-            await databaseReference.Child("groups").Child(groupId).SetRawJsonValueAsync(JsonUtility.ToJson(newGroup));
-            Debug.Log($"Group Created: {groupName}");
+                await db.AssignGroupToUser(teacher.UserId, newGroup.Id);
+
+                OnGroupCreated?.Invoke(newGroup);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
-        public static async Task GetGroups()
+        public static async Task<List<GroupData>> GetGroups(string userId)
         {
-            var dataSnapshot = await databaseReference.Child("groups").GetValueAsync();
-            foreach (var group in dataSnapshot.Children)
+            try
             {
-                Debug.Log($"Group: {group.Child("name").Value}");
+                return await db.GetGroups(userId);
+            }
+            catch (Exception e)
+            {
+                throw e;
             }
         }
 
         public static async Task AddStudentToGroup(string groupId, string studentId)
         {
-            await databaseReference.Child("groups").Child(groupId).Child("students").Child(studentId).SetValueAsync(true);
-            Debug.Log($"Added student {studentId} to Group {groupId}");
+            await db.AddStudentToGroup(groupId, studentId);
         }
 
         public static async Task RemoveStudentFromGroup(string groupId, string studentId)
         {
-            await databaseReference.Child("groups").Child(groupId).Child("students").Child(studentId).RemoveValueAsync();
-            Debug.Log($"Removed student {studentId} from Group {groupId}");
+            await db.RemoveStudentFromGroup(groupId, studentId);
         }
     }
 
+    [Serializable]
     public struct UserData
     {
-        public string userId;
-        public string email;
-        public string role;
+        [JsonProperty("id")]
+        public string UserId { get; set; }
 
-        public UserData(string userId, string email, string role)
+        [JsonProperty("email")]
+        public string Email { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("role")]
+        public UserRole Role { get; set; }
+
+        [JsonProperty("groupsIds")]
+        public List<string> groups { get; set; }
+
+        public UserData(string userId, string email, string name, UserRole role)
         {
-            this.userId = userId;
-            this.email = email;
-            this.role = role;
+            UserId = userId;
+            Email = email;
+            Name = name;
+            Role = role;
+            groups = new List<string>();
+        }
+
+        public void AssignGroup(string groupId)
+        {
+            groups.Add(groupId);
         }
     }
 
+    [System.Serializable]
     public struct GroupData
     {
-        public string groupId;
-        public string groupName;
-        public string grade;
-        public string subject;
-        public string teacherId;
+        [JsonProperty("id")]
+        public string Id { get; set; }
+
+        [JsonProperty("name")]
+        public string Name { get; set; }
+
+        [JsonProperty("grade")]
+        public string Grade { get; set; }
+
+        [JsonProperty("subject")]
+        public string Subject { get; set; }
+
+        [JsonProperty("teacherId")]
+        public string TeacherId { get; set; }
+
+        [JsonProperty("studentsIds")]
+        public List<string> StudentsIds { get; set; }
 
         public GroupData(string groupId, string groupName, string grade, string subject, string teacherId)
         {
-            this.groupId = groupId;
-            this.groupName = groupName;
-            this.grade = grade;
-            this.subject = subject;
-            this.teacherId = teacherId;
+            Id = groupId;
+            Name = groupName;
+            Grade = grade;
+            Subject = subject;
+            TeacherId = teacherId;
+            StudentsIds = new List<string>();
+        }
+
+        public void AddStudent(string studentId)
+        {
+            StudentsIds.Add(studentId);
+        }
+
+        public void RemoveStudent(string studentId)
+        {
+            StudentsIds.Remove(studentId);
         }
     }
 
