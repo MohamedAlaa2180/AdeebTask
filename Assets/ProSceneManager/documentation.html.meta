@@ -5,3 +5,10 @@ TextScriptImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 312968
+  packageName: Pro Scene Manager
+  packageVersion: 1.0.0
+  assetPath: Assets/ProSceneManager/documentation.html
+  uploadId: 737849

@@ -12,6 +12,11 @@ public class LoginScreenView : MonoBehaviour
     public TextMeshProUGUI errorMessage;
     public Button buttonLogin;
 
+    private void Awake()
+    {
+        inputPassword.contentType = TMP_InputField.ContentType.Password;
+    }
+
     private void OnEnable()
     {
         buttonLogin.onClick.AddListener(OnLoginButtonClicked);

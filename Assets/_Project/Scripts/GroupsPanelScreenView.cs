@@ -1,5 +1,7 @@
+using Cysharp.Threading.Tasks;
 using Firebase;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -43,10 +45,13 @@ public class GroupsPanelScreenView : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-
         activeGroups.Clear();
 
+        await UniTask.WaitUntil(() => SessionData.CurrentUser.UserId != "");
+
         var groups = await FirebaseManager.GetGroups(SessionData.CurrentUser.UserId);
+
+        Debug.Log($"Groups count: {groups.Count}");
 
         foreach (var group in groups)
         {

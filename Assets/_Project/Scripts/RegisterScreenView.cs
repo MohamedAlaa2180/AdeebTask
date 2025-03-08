@@ -15,6 +15,11 @@ public class RegisterScreenView : MonoBehaviour
     public TextMeshProUGUI textMessage;
     public Button buttonRegister;
 
+    private void Awake()
+    {
+        inputPassword.contentType = TMP_InputField.ContentType.Password;
+    }
+
     private void OnEnable()
     {
         buttonRegister.onClick.AddListener(OnRegisterButtonClicked);

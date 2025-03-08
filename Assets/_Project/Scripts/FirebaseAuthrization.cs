@@ -1,9 +1,6 @@
-using Firebase;
+using Cysharp.Threading.Tasks;
 using Firebase.Auth;
-using Firebase.Database;
 using System;
-using System.Net.Mail;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Firebase
@@ -44,7 +41,7 @@ namespace Firebase
             }
         }
 
-        public async Task<FirebaseUser> RegisterUser(string email, string password, string nickName)
+        public async UniTask<FirebaseUser> RegisterUser(string email, string password, string nickName)
         {
             try
             {
@@ -64,8 +61,7 @@ namespace Firebase
             }
         }
 
-
-        public async Task<FirebaseUser> LoginUser(string email, string password)
+        public async UniTask<FirebaseUser> LoginUser(string email, string password)
         {
             try
             {

@@ -1,11 +1,7 @@
-using Firebase.Auth;
-using Firebase.Database;
+using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Firebase
@@ -38,7 +34,7 @@ namespace Firebase
             }
         }
 
-        public static async Task<UserData> RegisterUser(string email, string password, UserRole role, string nickName)
+        public static async UniTask<UserData> RegisterUser(string email, string password, UserRole role, string nickName)
         {
             try
             {
@@ -54,7 +50,7 @@ namespace Firebase
             }
         }
 
-        public static async Task<UserData> LoginUser(string email, string password)
+        public static async UniTask<UserData> LoginUser(string email, string password)
         {
             try
             {
@@ -69,21 +65,33 @@ namespace Firebase
             }
         }
 
+        public static async UniTask<GroupData> GetGroup(string groupId)
+        {
+            try
+            {
+                return await db.GetGroup(groupId);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
         public static void LogoutUser() => auth.LogoutUser();
 
-        private static async Task WriteNewUser(UserData userData)
+        private static async UniTask WriteNewUser(UserData userData)
         {
             await db.WriteNewUser(userData);
         }
 
-        public static async Task CreateGroup(string groupName, string grade, string subject)
+        public static async UniTask CreateGroup(string groupName, string grade, string subject)
         {
             try
             {
                 var newGroup = await db.CreateGroup(groupName, grade, subject, auth.CurrentUser.UserId);
                 var teacher = await db.GetUser(newGroup.TeacherId);
 
-                await db.AssignGroupToUser(teacher.UserId, newGroup.Id);
+                await AssignGroupToUser(teacher.UserId, newGroup.Id);
 
                 OnGroupCreated?.Invoke(newGroup);
             }
@@ -93,7 +101,31 @@ namespace Firebase
             }
         }
 
-        public static async Task<List<GroupData>> GetGroups(string userId)
+        public static async UniTask AssignGroupToUser(string userId, string groupId)
+        {
+            try
+            {
+                await db.AssignGroupToUser(userId, groupId);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public static async UniTask RemoveGroupFromUser(string userId, string groupId)
+        {
+            try
+            {
+                await db.RemoveGroupFromUser(userId, groupId);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public static async UniTask<List<GroupData>> GetGroups(string userId)
         {
             try
             {
@@ -105,19 +137,33 @@ namespace Firebase
             }
         }
 
-        public static async Task AddStudentToGroup(string groupId, string studentId)
+        public static async UniTask AddStudentToGroup(string groupId, string studentId)
         {
-            await db.AddStudentToGroup(groupId, studentId);
+            try
+            {
+                await db.AddStudentToGroup(groupId, studentId);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
 
-        public static async Task RemoveStudentFromGroup(string groupId, string studentId)
+        public static async UniTask RemoveStudentFromGroup(string groupId, string studentId)
         {
-            await db.RemoveStudentFromGroup(groupId, studentId);
+            try
+            {
+                await db.RemoveStudentFromGroup(groupId, studentId);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
         }
     }
 
     [Serializable]
-    public struct UserData
+    public class UserData
     {
         [JsonProperty("id")]
         public string UserId { get; set; }
@@ -150,7 +196,7 @@ namespace Firebase
     }
 
     [System.Serializable]
-    public struct GroupData
+    public class GroupData
     {
         [JsonProperty("id")]
         public string Id { get; set; }
@@ -167,7 +213,7 @@ namespace Firebase
         [JsonProperty("teacherId")]
         public string TeacherId { get; set; }
 
-        [JsonProperty("studentsIds")]
+        [JsonProperty("students")]
         public List<string> StudentsIds { get; set; }
 
         public GroupData(string groupId, string groupName, string grade, string subject, string teacherId)
