@@ -90,6 +90,54 @@ namespace Firebase
             }
         }
 
+        public async UniTask DeleteGroup(string groupId)
+        {
+            try
+            {
+                DatabaseReference groupRef = databaseReference.Child("groups").Child(groupId);
+
+                // Step 1: Get group data to find associated users
+                DataSnapshot groupSnapshot = await groupRef.GetValueAsync();
+
+                if (!groupSnapshot.Exists)
+                {
+                    Debug.LogWarning($"Group {groupId} does not exist.");
+                    return;
+                }
+
+                // Step 2: Remove group ID from all students and teacher
+                string teacherId = groupSnapshot.Child("teacher_id").Value?.ToString();
+                List<string> studentIds = new List<string>();
+
+                if (groupSnapshot.Child("students").Exists)
+                {
+                    studentIds = JsonConvert.DeserializeObject<List<string>>(groupSnapshot.Child("students").GetRawJsonValue());
+                }
+
+                // Remove group from teacher's list
+                if (!string.IsNullOrEmpty(teacherId))
+                {
+                    await RemoveGroupFromUser(teacherId, groupId);
+                }
+
+                // Remove group from each student
+                foreach (string studentId in studentIds)
+                {
+                    await RemoveGroupFromUser(studentId, groupId);
+                }
+
+                // Step 3: Delete the group from Firebase
+                await groupRef.RemoveValueAsync();
+
+                Debug.Log($"Group {groupId} has been deleted successfully.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error deleting group: {e.Message}");
+            }
+        }
+
+
         public async UniTask<List<GroupData>> GetGroups(string userId)
         {
             List<GroupData> groups = new List<GroupData>();

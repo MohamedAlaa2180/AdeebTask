@@ -101,6 +101,18 @@ namespace Firebase
             }
         }
 
+        public static async UniTask DeleteGroup(string groupId)
+        {
+            try
+            {
+                await db.DeleteGroup(groupId);
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
         public static async UniTask AssignGroupToUser(string userId, string groupId)
         {
             try

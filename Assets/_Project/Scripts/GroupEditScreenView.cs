@@ -1,5 +1,4 @@
 using Firebase;
-using NUnit.Framework;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +9,7 @@ public class GroupEditScreenView : BaseScreen
     public TMP_InputField inputStudentId;
     [SerializeField] private Button addStudentButton;
     [SerializeField] private Button removeStudentButton;
+    [SerializeField] private Button deleteGroupButton;
     private GroupData groupData;
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private StudentItemView studentItemViewPrefab;
@@ -26,12 +26,30 @@ public class GroupEditScreenView : BaseScreen
     {
         addStudentButton.onClick.AddListener(OnAddStudentButtonClicked);
         removeStudentButton.onClick.AddListener(OnRemoveStudentButtonClicked);
+        deleteGroupButton.onClick.AddListener(OnDeleteGroupButtonClicked);
     }
 
     private void OnDisable()
     {
         addStudentButton.onClick.RemoveListener(OnAddStudentButtonClicked);
         removeStudentButton.onClick.RemoveListener(OnRemoveStudentButtonClicked);
+        deleteGroupButton.onClick.RemoveListener(OnDeleteGroupButtonClicked);
+    }
+
+    private async void OnDeleteGroupButtonClicked()
+    {
+        // Delete group
+        try
+        {
+            await FirebaseManager.DeleteGroup(groupData.Id);
+            HideScreen();
+        }
+        catch (System.Exception)
+        {
+            DisplayMessage("Failed to delete group");
+            throw;
+        }
+        
     }
 
     private async void OnAddStudentButtonClicked()
@@ -51,7 +69,6 @@ public class GroupEditScreenView : BaseScreen
                 DisplayMessage(e.Message);
                 throw e;
             }
-            
         }
     }
 
@@ -69,7 +86,6 @@ public class GroupEditScreenView : BaseScreen
             }
             catch (System.Exception e)
             {
-
                 throw e;
             }
         }
