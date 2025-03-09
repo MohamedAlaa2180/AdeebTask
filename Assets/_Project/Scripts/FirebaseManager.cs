@@ -19,7 +19,7 @@ namespace Firebase
 
         public static async void InitializeFirebase()
         {
-            System.Environment.SetEnvironmentVariable("USE_AUTH_EMULATOR", "no");
+          //  System.Environment.SetEnvironmentVariable("USE_AUTH_EMULATOR", "no");
             var dependencyStatus = await FirebaseApp.CheckAndFixDependenciesAsync();
             if (dependencyStatus == DependencyStatus.Available)
             {
