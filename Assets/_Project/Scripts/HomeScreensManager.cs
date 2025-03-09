@@ -23,13 +23,19 @@ public class HomeScreensManager : MonoBehaviour
 
     public SerializedDictionary<HomeScreensEnum, BaseScreen> homeScreens;
 
-    public BaseScreen ShowScreen()
+    public BaseScreen ShowScreen(HomeScreensEnum screenType)
     {
-        return homeScreens[HomeScreensEnum.GroupEditScreen].ShowScreen();
+        return homeScreens[screenType].ShowScreen();
+    }
+
+    public void HideScreen(HomeScreensEnum screenType)
+    {
+        homeScreens[screenType].HideScreen();
     }
 }
 
 public enum HomeScreensEnum
 {
-    GroupEditScreen
+    GroupEditScreen,
+    GroupsPanelScreen
 }

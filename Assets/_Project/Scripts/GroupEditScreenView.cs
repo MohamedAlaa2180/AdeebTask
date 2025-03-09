@@ -43,6 +43,7 @@ public class GroupEditScreenView : BaseScreen
         {
             await FirebaseManager.DeleteGroup(groupData.Id);
             HideScreen();
+            HomeScreensManager.Instance.ShowScreen(HomeScreensEnum.GroupsPanelScreen);
         }
         catch (System.Exception)
         {

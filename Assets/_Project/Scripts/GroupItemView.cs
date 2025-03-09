@@ -29,7 +29,9 @@ public class GroupItemView : MonoBehaviour
 
     private void OpenEditScreen()
     {
-        GroupEditScreenView groupEditScreenView =  (GroupEditScreenView)HomeScreensManager.Instance.homeScreens[HomeScreensEnum.GroupEditScreen].ShowScreen();
+        GroupEditScreenView groupEditScreenView =  (GroupEditScreenView)HomeScreensManager.Instance.ShowScreen(HomeScreensEnum.GroupEditScreen);
+        HomeScreensManager.Instance.HideScreen(HomeScreensEnum.GroupsPanelScreen);
+
         groupEditScreenView.Init(groupData);
     }
 

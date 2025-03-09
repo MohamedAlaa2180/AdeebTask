@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GroupsPanelScreenView : MonoBehaviour
+public class GroupsPanelScreenView : BaseScreen
 {
     [SerializeField] private GroupItemView groupItemViewPrefab;
     [SerializeField] private Transform groupsContainer;
@@ -27,16 +27,12 @@ public class GroupsPanelScreenView : MonoBehaviour
     private void OnEnable()
     {
         FirebaseManager.OnGroupCreated += OnGroupCreated;
+        RefreshGroups();
     }
 
     private void OnDisable()
     {
         FirebaseManager.OnGroupCreated -= OnGroupCreated;
-    }
-
-    private void Start()
-    {
-        RefreshGroups();
     }
 
     private async void RefreshGroups()

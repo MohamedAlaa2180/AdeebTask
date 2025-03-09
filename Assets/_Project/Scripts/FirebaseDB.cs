@@ -106,7 +106,7 @@ namespace Firebase
                 }
 
                 // Step 2: Remove group ID from all students and teacher
-                string teacherId = groupSnapshot.Child("teacher_id").Value?.ToString();
+                string teacherId = groupSnapshot.Child("teacherId").Value?.ToString();
                 List<string> studentIds = new List<string>();
 
                 if (groupSnapshot.Child("students").Exists)
