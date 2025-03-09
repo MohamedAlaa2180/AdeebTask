@@ -17,6 +17,9 @@ public class CreateGroupScreenView : MonoBehaviour
     private void OnEnable()
     {
         createGroupButton.onClick.AddListener(OnCreateGroupButtonClicked);
+        inputGroupName.text = "";
+        inputGroupGrade.text = "";
+        inputGroupSubject.text = "";
     }
 
     private void OnDisable()

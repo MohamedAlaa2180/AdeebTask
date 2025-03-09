@@ -27,6 +27,7 @@ public class GroupEditScreenView : BaseScreen
         addStudentButton.onClick.AddListener(OnAddStudentButtonClicked);
         removeStudentButton.onClick.AddListener(OnRemoveStudentButtonClicked);
         deleteGroupButton.onClick.AddListener(OnDeleteGroupButtonClicked);
+        inputStudentId.text = "";
     }
 
     private void OnDisable()
